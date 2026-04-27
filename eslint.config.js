@@ -21,6 +21,7 @@ export default tseslint.config(
       'commitlint.config.js',
       'drizzle.config.ts',
       'vitest.config.ts',
+      'src/db/**',
     ],
   },
   js.configs.recommended,

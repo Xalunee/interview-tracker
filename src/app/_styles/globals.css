@@ -1,0 +1,301 @@
+@import 'tailwindcss';
+
+/* ========== Color Palette ========== */
+@theme {
+  /* Background scale */
+  --color-background: #ffffff;
+  --color-surface: #f5f5f5;
+  --color-surface-subtle: #fafafa;
+  --color-surface-glass: rgba(255, 255, 255, 0.8);
+
+  /* Text scale */
+  --color-text-primary: #171717;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+  --color-text-quaternary: #cccccc;
+  --color-text-inverse: #ffffff;
+
+  /* Accent */
+  --color-accent: #007aff;
+  --color-accent-hover: #0051d5;
+  --color-accent-subtle: #f0f4ff;
+
+  /* Semantic */
+  --color-success-bg: #d1fae5;
+  --color-success-text: #065f46;
+  --color-warning-bg: #fef3c7;
+  --color-warning-text: #92400e;
+  --color-danger-bg: #fee2e2;
+  --color-danger-text: #991b1b;
+  --color-info-bg: #dbeafe;
+  --color-info-text: #1e40af;
+  --color-neutral-bg: #f3f4f6;
+  --color-neutral-text: #374151;
+
+  /* Stage-specific */
+  --stage-wishlist-bg: #e0e7ff;
+  --stage-wishlist-text: #3730a3;
+  --stage-applied-bg: #dbeafe;
+  --stage-applied-text: #1e40af;
+  --stage-hr-screen-bg: #fcd34d;
+  --stage-hr-screen-text: #78350f;
+  --stage-tech-round-bg: #a78bfa;
+  --stage-tech-round-text: #4c1d95;
+  --stage-final-bg: #86efac;
+  --stage-final-text: #166534;
+  --stage-offer-bg: #34d399;
+  --stage-offer-text: #065f46;
+  --stage-rejected-bg: #fecaca;
+  --stage-rejected-text: #7f1d1d;
+
+  /* Typography */
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', 'Courier New', monospace;
+
+  /* Type scale */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 32px;
+  --text-3xl: 44px;
+  --text-4xl: 56px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+
+  /* Spacing */
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-24: 96px;
+  --spacing-32: 128px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Transitions */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index */
+  --z-hide: -1;
+  --z-base: 0;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-fixed: 30;
+  --z-modal-backdrop: 40;
+  --z-modal: 50;
+  --z-popover: 60;
+  --z-tooltip: 70;
+  --z-notification: 80;
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-background: #0a0a0a;
+    --color-surface: #1a1a1a;
+    --color-surface-subtle: #0f0f0f;
+    --color-surface-glass: rgba(10, 10, 10, 0.8);
+
+    --color-text-primary: #ededed;
+    --color-text-secondary: #999999;
+    --color-text-tertiary: #666666;
+    --color-text-quaternary: #333333;
+    --color-text-inverse: #0a0a0a;
+
+    --color-accent: #007aff;
+    --color-accent-subtle: #001033;
+
+    --color-success-bg: #064e3b;
+    --color-success-text: #86efac;
+    --color-warning-bg: #78350f;
+    --color-warning-text: #fcd34d;
+    --color-danger-bg: #7f1d1d;
+    --color-danger-text: #fecaca;
+    --color-info-bg: #1e3a8a;
+    --color-info-text: #93c5fd;
+    --color-neutral-bg: #2d3748;
+    --color-neutral-text: #e2e8f0;
+  }
+}
+
+/* ========== Base Styles ========== */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  transition:
+    background-color var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard);
+}
+
+/* Typography */
+h1 {
+  font-size: var(--text-4xl);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: var(--text-3xl);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+h4 {
+  font-size: var(--text-xl);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+h5 {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+h6 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+::-moz-selection {
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-quaternary);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* ========== Utility Classes ========== */
+
+/* Glass morphism */
+.glass {
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Squircle radii (Apple-style) */
+.squircle-sm {
+  border-radius: var(--radius-sm);
+}
+
+.squircle-md {
+  border-radius: var(--radius-md);
+}
+
+.squircle-lg {
+  border-radius: var(--radius-lg);
+}
+
+.squircle-xl {
+  border-radius: var(--radius-xl);
+}
+
+.squircle-2xl {
+  border-radius: var(--radius-2xl);
+}
+
+/* Hover lift effect */
+.hover-lift {
+  transition:
+    transform var(--duration-base) var(--ease-spring),
+    box-shadow var(--duration-base) var(--ease-spring);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Markdown utility */
+.markdown {
+  line-height: 1.6;
+}
+
+.markdown p {
+  margin: var(--spacing-3) 0;
+}
+
+.markdown code {
+  background: var(--color-surface);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.markdown pre {
+  background: var(--color-surface);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+}

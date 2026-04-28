@@ -1,2 +1,2 @@
 // Configuration module
-export { config } from './env';
+export { env } from './env';

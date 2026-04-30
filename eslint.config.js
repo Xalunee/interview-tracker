@@ -1,7 +1,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import nextPlugin from '@next/eslint-plugin-next';
-import importPlugin from 'eslint-plugin-import';
+import importPlugin from 'eslint-plugin-import-x';
 import prettierConfig from 'eslint-config-prettier';
 
 export default tseslint.config(
@@ -35,7 +35,7 @@ export default tseslint.config(
     },
     plugins: {
       '@next/next': nextPlugin,
-      import: importPlugin,
+      'import-x': importPlugin,
     },
     rules: {
       ...nextPlugin.configs['core-web-vitals'].rules,
@@ -47,7 +47,7 @@ export default tseslint.config(
           caughtErrorsIgnorePattern: '^_',
         },
       ],
-      'import/order': [
+      'import-x/order': [
         'error',
         {
           groups: [

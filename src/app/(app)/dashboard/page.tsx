@@ -1,4 +1,5 @@
 import { getSession } from '@/shared/auth/session';
+import { LogoutButton } from '@/features/auth-logout';
 
 const STRINGS = {
   greetingPrefix: 'Привет',
@@ -11,9 +12,10 @@ export default async function DashboardPage() {
   const displayName = session?.user?.name ?? session?.user?.email ?? STRINGS.fallbackName;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col items-start gap-6">
       <h1>{`${STRINGS.greetingPrefix}, ${displayName}!`}</h1>
       <p style={{ color: 'var(--color-text-secondary)' }}>{STRINGS.body}</p>
+      <LogoutButton />
     </div>
   );
 }

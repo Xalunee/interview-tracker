@@ -8,6 +8,13 @@
       "when": 1777267225460,
       "tag": "0000_dry_mesmero",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1745827200000,
+      "tag": "0001_rename_verification_email_to_identifier",
+      "breakpoints": true
     }
   ]
 }

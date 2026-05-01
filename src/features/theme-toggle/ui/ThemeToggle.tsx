@@ -2,6 +2,7 @@
 
 import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/shared/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
@@ -26,10 +27,17 @@ const LABELS: Record<Theme, string> = {
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const current = (theme as Theme) ?? 'system';
-  const Icon = ICONS[current] ?? Monitor;
-  const label = LABELS[current] ?? THEME_TOGGLE_STRINGS.system;
+  const Icon = mounted ? (ICONS[current] ?? Monitor) : Monitor;
+  const label = mounted
+    ? (LABELS[current] ?? THEME_TOGGLE_STRINGS.system)
+    : THEME_TOGGLE_STRINGS.system;
 
   function handleToggle() {
     const idx = CYCLE.indexOf(current);

@@ -1,3 +1,18 @@
+- name: Debug env
+  run: |
+    echo "DATABASE_URL prefix: ${DATABASE_URL:0:20}"
+    node -e "console.log(new URL(process.env.DATABASE_URL))"
+  env:
+    DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+    AUTH_SECRET: ci-secret-min-32-chars-placeholder!!
+    AUTH_URL: http://localhost:3000
+    AUTH_GOOGLE_ID: ci-google-id-placeholder
+    AUTH_GOOGLE_SECRET: ci-google-secret-placeholder
+    AUTH_RESEND_KEY: re_ci_placeholder_key
+    AUTH_EMAIL_FROM: noreply@ci.example.com
+    NEXT_PUBLIC_APP_URL: http://localhost:3000
+    NEXT_PUBLIC_APP_NAME: Interview Tracker
+
 name: CI
 
 on:
@@ -42,12 +57,13 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://ci:ci@localhost:5432/ci' }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'ci-secret-min-32-chars-placeholder!!' }}
+          # Placeholder values for build-time env validation — no real connections are made during build
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          AUTH_SECRET: ci-secret-min-32-chars-placeholder!!
           AUTH_URL: http://localhost:3000
-          AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID || 'ci-google-id-placeholder' }}
-          AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET || 'ci-google-secret-placeholder' }}
-          AUTH_RESEND_KEY: ${{ secrets.AUTH_RESEND_KEY || 're_ci_placeholder_key' }}
-          AUTH_EMAIL_FROM: ${{ secrets.AUTH_EMAIL_FROM || 'noreply@ci.example.com' }}
+          AUTH_GOOGLE_ID: ci-google-id-placeholder
+          AUTH_GOOGLE_SECRET: ci-google-secret-placeholder
+          AUTH_RESEND_KEY: re_ci_placeholder_key
+          AUTH_EMAIL_FROM: noreply@ci.example.com
           NEXT_PUBLIC_APP_URL: http://localhost:3000
           NEXT_PUBLIC_APP_NAME: Interview Tracker

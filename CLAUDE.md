@@ -47,18 +47,19 @@ senior-level frontend skills.
 We use Feature-Sliced Design adapted for Next.js App Router.
 
 ### Layer Structure (top to bottom)
+
 src/
-├── app/              ← Next.js App Router root
-│   ├── _providers/   ← FSD "app" layer: providers, theme, query
-│   ├── _styles/      ← globals.css, design tokens
-│   ├── (auth)/       ← public auth pages route group
-│   ├── (app)/        ← protected pages route group
-│   └── api/auth/     ← Auth.js handler only
-├── widgets/          ← composed UI blocks (kanban-board, app-sidebar, ...)
-├── features/         ← user actions (company-create, drag-drop, ...)
-├── entities/         ← business entities (company, interview, question, ...)
-├── shared/           ← UI kit, utilities, configs
-└── db/               ← Drizzle schema and client (infra, not FSD)
+├── app/ ← Next.js App Router root
+│ ├── \_providers/ ← FSD "app" layer: providers, theme, query
+│ ├── \_styles/ ← globals.css, design tokens
+│ ├── (auth)/ ← public auth pages route group
+│ ├── (app)/ ← protected pages route group
+│ └── api/auth/ ← Auth.js handler only
+├── widgets/ ← composed UI blocks (kanban-board, app-sidebar, ...)
+├── features/ ← user actions (company-create, drag-drop, ...)
+├── entities/ ← business entities (company, interview, question, ...)
+├── shared/ ← UI kit, utilities, configs
+└── db/ ← Drizzle schema and client (infra, not FSD)
 
 ### Import Rules (CRITICAL)
 
@@ -71,6 +72,7 @@ A layer can ONLY import from layers below it:
 - `shared/` → only itself, plus db for server-side utilities
 
 **NEVER** import sibling slices in the same layer:
+
 - ❌ `entities/company` cannot import from `entities/interview`
 - ❌ `features/company-create` cannot import from `features/interview-create`
 
@@ -81,11 +83,11 @@ them in a higher layer (widget or page).
 
 Each slice has these segments (only what's needed):
 slice-name/
-├── ui/         ← React components
-├── model/      ← state, business logic, types, schemas
-├── api/        ← server actions (mutations) or fetch functions (reads)
-├── lib/        ← utilities specific to this slice
-└── index.ts    ← public API: only export what's needed externally
+├── ui/ ← React components
+├── model/ ← state, business logic, types, schemas
+├── api/ ← server actions (mutations) or fetch functions (reads)
+├── lib/ ← utilities specific to this slice
+└── index.ts ← public API: only export what's needed externally
 
 ### Slice Size
 
@@ -99,11 +101,118 @@ Use absolute imports everywhere. Example: `@/entities/company`, not `../../../en
 
 ## Database Schema
 
+## Auth.js v5 + Drizzle Adapter — Known Quirks
+
+Эти особенности выявлены в процессе разработки. Не "исправлять" — это намеренное поведение адаптера.
+
+### 1. Таблица `accounts` — смешанный camelCase/snake_case
+
+`@auth/drizzle-adapter` ожидает **разные стили именования** JS-ключей в таблице `accounts`:
+
+- Domain-поля — camelCase: `userId`, `providerAccountId`
+- OAuth-поля — snake_case: `refresh_token`, `access_token`, `expires_at`, `token_type`, `id_token`, `session_state`
+
+```typescript
+// ✅ Правильно
+export const accounts = pgTable('accounts', {
+  userId: text('user_id'), // camelCase JS-ключ
+  providerAccountId: text('provider_account_id'), // camelCase JS-ключ
+  refresh_token: text('refresh_token'), // snake_case JS-ключ ← намеренно
+  access_token: text('access_token'), // snake_case JS-ключ ← намеренно
+  expires_at: integer('expires_at'), // snake_case JS-ключ ← намеренно
+  token_type: text('token_type'), // snake_case JS-ключ ← намеренно
+  id_token: text('id_token'), // snake_case JS-ключ ← намеренно
+  session_state: text('session_state'), // snake_case JS-ключ ← намеренно
+});
+```
+
+Если сделать все поля camelCase — адаптер молча запишет NULL в OAuth-поля. Refresh токены не сохранятся.
+
+### 2. Таблица `verification_tokens` — колонка называется `identifier`, не `email`
+
+Адаптер использует имя `identifier` в SQL-запросах (не `email`, не `emailAddress`):
+
+```typescript
+// ✅ Правильно
+export const verificationTokens = pgTable('verification_tokens', {
+  identifier: text('identifier').notNull(), // ← обязательно 'identifier'
+  token: text('token').notNull(),
+  expires: timestamp('expires', { withTimezone: true }).notNull(),
+});
+```
+
+Если назвать `email` — magic link упадёт с `NeonDbError: column does not exist` при попытке использовать токен.
+
+### 3. Таблица `verification_tokens` — колонка `expires`, не `expires_at`
+
+Адаптер пишет `returning "identifier", "token", "expires"` — без суффикса `_at`:
+
+```typescript
+// ✅ Правильно
+expires: timestamp('expires', { withTimezone: true }).notNull();
+
+// ❌ Неправильно — адаптер не найдёт колонку
+expiresAt: timestamp('expires_at', { withTimezone: true }).notNull();
+```
+
+### 4. ESLint — использовать `eslint-plugin-import-x`, не `eslint-plugin-import`
+
+Оригинальный `eslint-plugin-import` несовместим с ESLint 10:
+
+- Падает с `getTokenOrCommentBefore is not a function` при любом нарушении `import/order`
+- Форк `eslint-plugin-import-x` — drop-in замена, поддерживает ESLint 10
+
+```typescript
+// eslint.config.js
+import importX from 'eslint-plugin-import-x';
+
+// Правила используют префикс import-x/
+'import-x/order': ['error', { ... }]
+```
+
+### 5. DATABASE_URL валидация — не использовать z.string().url()
+
+`z.string().url()` использует браузерный URL-парсер, который нестабильно работает
+с `postgresql://` схемой в разных окружениях:
+
+```typescript
+// ✅ Правильно
+DATABASE_URL: z.string().min(10),
+
+// ❌ Может падать в CI/production
+DATABASE_URL: z.string().url(),
+```
+
+### 6. JWT callbacks — user.id не добавляется в session автоматически
+
+Auth.js v5 по умолчанию НЕ кладёт `user.id` в session. Без явных callbacks
+`session.user.id` будет `undefined` везде — в Server Components и Server Actions:
+
+```typescript
+// auth.config.ts — обязательно:
+callbacks: {
+  jwt: ({ token, user }) => {
+    if (user) token.id = user.id;
+    return token;
+  },
+  session: ({ session, token }) => {
+    if (session.user && token.id) {
+      session.user.id = token.id as string;
+    }
+    return session;
+  },
+},
+```
+
+Без этого все Server Actions не смогут привязать данные к пользователю.
+
 11 tables:
+
 - **Auth**: `users`, `accounts`, `sessions`, `verification_tokens`, `auth_tokens`
 - **Domain**: `companies`, `interviews`, `questions`, `contacts`, `events`
 
 Key decisions:
+
 - **UUIDs** for all primary keys (not serial)
 - **snake_case** column names (DB native, easier for future Go service)
 - **Postgres native enums** for stages/types/categories (not TEXT + CHECK)
@@ -117,6 +226,7 @@ Key decisions:
 - **Constraints at DB level** (CHECK, NOT NULL, FK with explicit ON DELETE)
 
 Cascade strategy:
+
 - Delete user → cascade everything (GDPR)
 - Delete company → cascade interviews, questions, contacts, events
 - Delete interview → cascade questions
@@ -159,6 +269,7 @@ Stage-specific: `--stage-{wishlist|applied|hr-screen|tech-round|final|offer|reje
 Font: **Geist** (loaded via Google Fonts). Fallback: -apple-system, BlinkMacSystemFont, etc.
 
 Type scale (Apple HIG-aligned, NOT round numbers):
+
 - 11px / 13px / 15px / 18px / 22px / 32px / 44px / 56px
 
 Weights: only 300, 400, 500, 600. Never 700+.
@@ -181,6 +292,7 @@ Spring transitions for most interactions:
 ### Liquid Glass
 
 Apply ONLY to navigation, overlays, and floating elements:
+
 - App header, sidebar (when floating)
 - Cmd+K palette
 - Modals, dropdowns, popovers
@@ -200,6 +312,7 @@ MVP: Russian only.
 - Never write strings inline in JSX, even short ones like "ОК"
 
 Example:
+
 ```ts
 // features/company-create/model/strings.ts
 export const COMPANY_CREATE_STRINGS = {
@@ -221,6 +334,7 @@ When v1.1 i18n is added, these constants will be replaced with `t('key')` calls.
 ## Server Actions Pattern
 
 Every Server Action must:
+
 1. Start with `'use server'` directive
 2. Validate input via Zod
 3. Verify auth session
@@ -228,6 +342,7 @@ Every Server Action must:
 5. Revalidate relevant paths/tags after mutation
 
 Template:
+
 ```ts
 'use server';
 
@@ -242,20 +357,20 @@ const inputSchema = z.object({
   // ...
 });
 
-export const createCompany = serverActionHandler(
-  inputSchema,
-  async (input) => {
-    const session = await requireAuth();
-    
-    const [company] = await db.insert(companies).values({
+export const createCompany = serverActionHandler(inputSchema, async (input) => {
+  const session = await requireAuth();
+
+  const [company] = await db
+    .insert(companies)
+    .values({
       ...input,
       userId: session.user.id,
-    }).returning();
-    
-    revalidatePath('/kanban');
-    return { company };
-  }
-);
+    })
+    .returning();
+
+  revalidatePath('/kanban');
+  return { company };
+});
 ```
 
 ## TanStack Query Pattern
@@ -263,6 +378,7 @@ export const createCompany = serverActionHandler(
 Use TanStack Query for all data reads. Never `useEffect + fetch`.
 
 Query keys should be typed and centralized per entity:
+
 ```ts
 // entities/company/api/keys.ts
 export const companyKeys = {
@@ -274,6 +390,7 @@ export const companyKeys = {
 ```
 
 For mutations through Server Actions, invalidate after success:
+
 ```ts
 const mutation = useMutation({
   mutationFn: createCompany,
@@ -297,6 +414,7 @@ const mutation = useMutation({
 ## Out of Scope (MVP)
 
 These are NOT part of MVP. Don't implement them unless explicitly asked:
+
 - Internationalization framework (next-intl) — Russian-only for now
 - Email notifications / cron jobs — UI-based reminders only
 - Browser extension

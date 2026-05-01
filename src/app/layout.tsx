@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+
+import { Providers } from './_providers';
 import './_styles/globals.css';
 
 const geistSans = localFont({
@@ -15,17 +17,15 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: 'Interview Tracker',
-  description: 'Job application tracker for senior developers',
+  description: 'Трекер заявок для senior-разработчиков',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+    <html lang="ru" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

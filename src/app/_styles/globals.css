@@ -58,6 +58,7 @@
   --color-surface-subtle: #fafafa;
   --color-surface-glass: rgba(255, 255, 255, 0.8);
   --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-strong: rgba(0, 0, 0, 0.16);
 
   /* Text scale */
   --color-text-primary: #171717;
@@ -165,6 +166,7 @@
   --color-surface-subtle: #0f0f0f;
   --color-surface-glass: rgba(10, 10, 10, 0.8);
   --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
 
   --color-text-primary: #ededed;
   --color-text-secondary: #999999;

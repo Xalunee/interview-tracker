@@ -10,6 +10,24 @@ export const interviewStageEnum = pgEnum('interview_stage', [
   'rejected',
 ]);
 
+export const companySourceEnum = pgEnum('company_source', [
+  'hh',
+  'linkedin',
+  'referral',
+  'telegram',
+  'company_site',
+  'other',
+]);
+
+export const salaryCurrencyEnum = pgEnum('salary_currency', [
+  'RUB',
+  'USD',
+  'EUR',
+  'KZT',
+  'AMD',
+  'GEL',
+]);
+
 export const interviewTypeEnum = pgEnum('interview_type', [
   'phone_screen',
   'technical',

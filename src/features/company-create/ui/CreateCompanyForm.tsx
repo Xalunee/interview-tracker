@@ -16,7 +16,7 @@ import {
   SelectValue,
   Textarea,
 } from '@/shared/ui';
-import { STAGES_ORDERED } from '@/entities/company';
+import { STAGES_ORDERED } from '@/entities/company/model/stage-config';
 import type { Company } from '@/entities/company/model/types';
 import { createCompany } from '../api/create-company';
 import { createCompanySchema } from '../model/schema';
